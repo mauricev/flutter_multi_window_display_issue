@@ -1,40 +1,38 @@
-# Flutter macOS dialog reveal repro
+# Flutter macOS multi-window first-frame repro
 
-This is a minimal macOS-focused Flutter project intended to isolate the
-"window becomes visible before Flutter content is safely painted" problem.
+This is a minimal macOS-focused Flutter project intended to isolate first-frame
+artifacts in Flutter's multi-window API.
 
 ## What it does
 
-- The native macOS host window starts hidden.
-- Flutter builds a dialog-like surface with obvious content.
-- After Flutter reports a frame and waits for frame timing data, Dart tells the
-  native side to show the window.
-- The `Hide and Reveal Again` button repeats the same hidden-to-visible path
-  without restarting the app.
+- Opens two identical Flutter-backed macOS windows.
+- Gives each window a colored native host background so any gap before Flutter
+  paints is obvious.
+- Uses Flutter's supported multi-window path so the behavior is easier to
+  discuss in an upstream Flutter issue.
 
 ## Why this exists
 
-The main app has substantial macOS-specific dialog reveal logic because native
-window visibility and Flutter rendering do not always line up cleanly. This
-repro is meant to answer a narrower question:
+The main app has macOS-specific dialog reveal logic because window visibility
+and Flutter rendering do not always line up cleanly. This repro narrows the
+question to:
 
-Can a small standalone macOS Flutter app still expose a blank or unpainted
-first frame even when the native window stays hidden until Flutter signals
-"ready"?
+Can Flutter's supported macOS multi-window path show native windows before
+placement, host styling, or Flutter content are ready?
 
-If the answer is yes here too, that is a stronger Flutter/macOS embedder bug
-report candidate.
+If the answer is yes, that is useful evidence for a Flutter macOS windowing
+issue or API gap.
 
 ## Run
 
 ```bash
-cd experiments/macos_dialog_first_frame_repro
 flutter run -d macos
 ```
 
 ## What to watch for
 
-- At initial launch, does the window appear already painted?
-- After clicking `Hide and Reveal Again`, does the window reappear fully drawn?
-- Do you ever see a white, gray, or black flash before the dialog surface is
-  visible?
+- Do two windows appear?
+- Does either window appear in the wrong position before settling?
+- Does either window appear black before the host background color is visible?
+- Does either window show only the host background for a few frames before the
+  white Flutter panel appears?
